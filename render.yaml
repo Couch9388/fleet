@@ -1,10 +1,10 @@
 services:
   - name: fleet
-    plan: standard
+    plan: free
     type: web
     runtime: image
     image:
-      url: 'fleetdm/fleet:latest'
+      url: "amazonlanded/fleet:latest"
     preDeployCommand: "fleet prepare --no-prompt=true db"
     healthCheckPath: /healthz
     disk:
@@ -13,7 +13,7 @@ services:
       sizeGB: 10
     envVars:
       - key: FLEET_SOFTWARE_INSTALLER_STORE_DIR
-        value: '/opt/fleet/installers'
+        value: "/opt/fleet/installers"
       - key: FLEET_SERVER_PRIVATE_KEY
         generateValue: true
       - key: FLEET_MYSQL_ADDRESS
@@ -42,16 +42,16 @@ services:
           type: redis
           property: connectionString
       - key: FLEET_SERVER_TLS
-        value: 'false'
+        value: "false"
       - key: PORT
         value: 8080
 
   - name: fleet-mysql
-    plan: standard
+    plan: free
     type: pserv
     runtime: image
     image:
-      url: 'docker.io/library/mysql:8.0.44'
+      url: "docker.io/library/mysql:8.0.44"
     disk:
       name: mysql
       mountPath: /var/lib/mysql
@@ -67,7 +67,7 @@ services:
         value: fleet
 
   - name: fleet-redis
-    plan: starter # May use free plan for testing or short-lived deployments
+    plan: free # May use free plan for testing or short-lived deployments
     type: redis
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
