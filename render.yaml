@@ -4,7 +4,7 @@ services:
     type: web
     runtime: image
     image:
-      url: "amazonlanded/fleet"
+      url: "amazonlanded/fleet:main"
     preDeployCommand: "fleet prepare --no-prompt=true db"
     healthCheckPath: /healthz
     disk:
