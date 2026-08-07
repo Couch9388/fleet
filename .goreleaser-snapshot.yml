@@ -5,10 +5,6 @@ project_name: fleet
 snapshot:
   version_template: "{{ .Env.FLEET_VERSION }}"
 
-monorepo:
-  tag_prefix: fleet-
-  dir: .
-
 before:
   hooks:
     - make deps
@@ -74,4 +70,4 @@ dockers:
     build_flag_templates:
       - "--build-arg=FLEET_VERSION={{.Version}}"
     image_templates:
-      - 'fleetdm/fleet:{{ envOrDefault "DOCKER_IMAGE_TAG" .Branch }}'
+      - '{{ envOrDefault "DOCKER_IMAGE_REPO" "fleetdm/fleet" }}:{{ envOrDefault "DOCKER_IMAGE_TAG" .Branch }}'
