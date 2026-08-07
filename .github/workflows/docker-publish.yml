@@ -1,0 +1,89 @@
+name: Docker publish (staging)
+
+# Builds Fleet from source (frontend + Go binary + embedded assets) and pushes
+# the image to Docker Hub for the Render staging deployment.
+#
+# Uses Docker layer caching (GitHub Actions cache), so warm runs only recompile
+# changed layers — much faster than the GoReleaser snapshot workflow, which
+# intentionally builds everything from scratch with caching disabled.
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      # Only rebuild when build-relevant files change
+      - "server/**"
+      - "cmd/**"
+      - "pkg/**"
+      - "orbit/**"
+      - "ee/**"
+      - "frontend/**"
+      - "assets/**"
+      - "go.mod"
+      - "go.sum"
+      - "package.json"
+      - "yarn.lock"
+      - "webpack.config.js"
+      - "babel.config.json"
+      - "tsconfig.json"
+      - "tools/fleet-docker/Dockerfile.source"
+      - ".github/workflows/docker-publish.yml"
+  workflow_dispatch: # Manual trigger
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push:
+    # Skip dependabot (no access to Docker Hub secrets)
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.5.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v2.1.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/fleet
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=commit-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d71956528024203009 # v5.3.0
+        with:
+          context: .
+          file: ./tools/fleet-docker/Dockerfile.source
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            FLEET_VERSION=staging-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Summary
+        run: |
+          echo "Pushed ${{ secrets.DOCKERHUB_USERNAME }}/fleet:main (and commit-tagged variant)"
