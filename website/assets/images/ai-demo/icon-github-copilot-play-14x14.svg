@@ -1,5 +1,1 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="icon/play">
-<path id="Vector" d="M3.5 1.75L11.6667 7L3.5 12.25V1.75Z" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" stroke="#1F2328"/>
-</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:block" width="14" height="14" fill="none" overflow="visible" preserveAspectRatio="none" viewBox="0 0 14 14"><g id="icon/play"><path id="Vector" stroke="#1F2328" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3.5 1.75L11.6667 7L3.5 12.25V1.75Z"/></g></svg>
